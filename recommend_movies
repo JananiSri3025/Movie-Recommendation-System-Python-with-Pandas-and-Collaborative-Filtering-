@@ -1,0 +1,28 @@
+import pandas as pd
+
+# Load movie ratings data (replace with your data source)
+ratings_data = pd.read_csv("movie_ratings.csv")
+
+# Create a pivot table to show user-movie ratings
+ratings_matrix = pd.pivot_table(ratings_data, values='rating', index='user_id', columns='movie_id')
+
+# Function to recommend movies based on user's ratings history
+def recommend_movies(user_id, ratings_matrix, num_recommendations=5):
+    # Get the user's ratings
+    user_ratings = ratings_matrix.loc[user_id]
+
+    # Find movies similar to those the user has rated highly
+    similar_movies = ratings_matrix.corrwith(user_ratings)
+    similar_movies = similar_movies.drop(user_id)  # Exclude user's own ratings
+    similar_movies = similar_movies.fillna(0)  # Fill missing values with 0
+
+    # Sort similar movies by correlation coefficient (higher is better)
+    similar_movies = similar_movies.sort_values(ascending=False)
+
+    # Recommend the top N movies
+    return similar_movies.head(num_recommendations).index.to_list()
+
+# Example usage:
+user_id = 123  # Replace with the user's ID
+recommended_movies = recommend_movies(user_id, ratings_matrix)
+print(f"Recommended movies for user {user_id}: {recommended_movies}")
